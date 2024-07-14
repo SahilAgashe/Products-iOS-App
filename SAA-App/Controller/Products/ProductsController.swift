@@ -11,7 +11,11 @@ class ProductsController: UIViewController {
     
     private static let cellReuseIdentifier = "Cell"
     
-    private var products = [Product]()
+    private var products = [Product]() {
+        didSet {
+            myTableView.reloadData()
+        }
+    }
     
     private lazy var myTableView: UITableView = {
         let tv = UITableView()
@@ -38,7 +42,15 @@ class ProductsController: UIViewController {
             myTableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor)
         ])
         
-        
+        Task {
+            let products = try await getProductsUsingNewTechnique()
+            self.products = products
+            print(products)
+        }
+       
+    }
+    
+    private func fetchProducts() {
         getProducts { [weak self] products in
             print("DEBUG is main queue => \(Thread.isMainThread)")
             DispatchQueue.main.async {
@@ -48,7 +60,6 @@ class ProductsController: UIViewController {
                     arr += arr
                 }
                 self?.products = arr
-                self?.myTableView.reloadData()
             }
         }
     }
@@ -93,6 +104,31 @@ extension ProductsController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ProductsController: UITableViewDelegate {
     
+}
+
+// MARK: - Using Async-Await Concurrency
+extension ProductsController {
+    
+    func getProductsUsingNewTechnique() async throws -> [Product] {
+        guard let url = URL(string: "https://fakestoreapi.com/products") else {
+            print("DEBUG: Guard let url error")
+            return []
+        }
+        
+        var products = [Product]()
+        
+        
+        let (data , response) = try await URLSession.shared.data(for: URLRequest(url: url))
+        
+        let resStatusCode = (response as? HTTPURLResponse)?.statusCode
+        print("DEBUG: Response Status Code => \(resStatusCode ?? -999)")
+        
+        guard let products = try? JSONDecoder().decode([Product].self, from: data) else {
+            print("DEBUG: Decoding Error while decoding products!")
+            return []
+        }
+        return products
+    }
 }
 
 // MARK: - Using Completion Handlers
