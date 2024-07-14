@@ -54,6 +54,7 @@ class ProductsController: UIViewController {
     }
 }
 
+// MARK: - UITableViewDataSource
 extension ProductsController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         products.count
@@ -89,10 +90,12 @@ extension ProductsController: UITableViewDataSource {
     
 }
 
+// MARK: - UITableViewDelegate
 extension ProductsController: UITableViewDelegate {
     
 }
 
+// MARK: - Using Completion Handlers
 extension ProductsController {
     
     func getProducts(completion: @escaping([Product]) -> Void) {
@@ -147,6 +150,7 @@ extension ProductsController {
     }
 }
 
+// MARK: - LazyImageView
 class LazyImageView: UIImageView {
     
     private let imageCache = NSCache<NSString, UIImage>()
